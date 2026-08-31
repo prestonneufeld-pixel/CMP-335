@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+	<title>Blackjack</title>
+	<link rel="stylesheet" href="blackjack.css">
+</head>
+
+<body>
+	<main class="game-shell">
+		<header class="topbar">
+			<div>
+				<p class="eyebrow">Table 07</p>
+				<h1>Blackjack</h1>
+			</div>
+			<div class="bankroll" aria-label="Current bankroll">
+				<span>Bankroll</span>
+				<strong id="bankroll">$500</strong>
+			</div>
+		</header>
+
+		<section class="table" aria-label="Blackjack table">
+			<div class="table-glow"></div>
+			<div class="dealer-area">
+				<div class="hand-heading">
+					<div>
+						<p class="hand-label">Dealer</p>
+						<p id="dealer-message" class="hand-message">Waiting for your bet</p>
+					</div>
+					<div id="dealer-score" class="score">--</div>
+				</div>
+				<div id="dealer-hand" class="hand" aria-label="Dealer hand"></div>
+			</div>
+
+			<div class="table-divider"><span>♠</span><span>♦</span><span>♣</span><span>♥</span></div>
+
+			<div class="player-area">
+				<div class="hand-heading">
+					<div>
+						<p class="hand-label">You</p>
+						<p id="player-message" class="hand-message">Choose your wager to begin</p>
+					</div>
+					<div id="player-score" class="score">--</div>
+				</div>
+				<div id="player-hand" class="hand" aria-label="Your hand"></div>
+			</div>
+		</section>
+
+		<section class="controls" aria-label="Game controls">
+			<div class="wager-panel">
+				<label for="wager">Wager</label>
+				<div class="wager-row">
+					<button class="step-button" id="decrease-wager" type="button" aria-label="Decrease wager">−</button>
+					<output id="wager" for="wager-slider">$25</output>
+					<button class="step-button" id="increase-wager" type="button" aria-label="Increase wager">+</button>
+				</div>
+				<input id="wager-slider" type="range" min="5" max="500" step="5" value="25">
+			</div>
+			<div class="action-panel">
+				<button id="deal-button" class="button button-primary" type="button">Deal cards</button>
+				<button id="hit-button" class="button" type="button" disabled>Hit</button>
+				<button id="stand-button" class="button" type="button" disabled>Stand</button>
+				<button id="double-button" class="button" type="button" disabled>Double</button>
+				<button id="surrender-button" class="button button-subtle" type="button" disabled>Surrender</button>
+			</div>
+		</section>
+
+		<p id="status" class="status" role="status">Place a wager, then deal the cards.</p>
+
+		<section class="dashboard" aria-label="Game dashboard">
+			<div class="stats-panel">
+				<div class="section-heading"><p class="eyebrow">Session report</p><span id="streak-label">Cold start</span></div>
+				<div class="stats-grid">
+					<div><strong id="rounds-stat">0</strong><span>Rounds</span></div>
+					<div><strong id="wins-stat">0</strong><span>Wins</span></div>
+					<div><strong id="blackjacks-stat">0</strong><span>Blackjacks</span></div>
+					<div><strong id="win-rate-stat">0%</strong><span>Win rate</span></div>
+				</div>
+			</div>
+			<div class="history-panel">
+				<div class="section-heading"><p class="eyebrow">Recent hands</p><span>Latest first</span></div>
+				<ul id="history-list" class="history-list"><li class="empty-history">Your completed hands will appear here.</li></ul>
+			</div>
+			<aside class="rules-panel">
+				<p class="eyebrow">House rules</p>
+				<h2>Play the hand.</h2>
+				<ul>
+					<li>Dealer stands on 17</li>
+					<li>Blackjack pays 3:2</li>
+					<li>Double down on first two cards</li>
+					<li>Surrender returns half your wager</li>
+				</ul>
+			</aside>
+		</section>
+	</main>
+
+	<script>
+		const suits = [
+			{ symbol: "♠", name: "spades", color: "black" },
+			{ symbol: "♥", name: "hearts", color: "red" },
+			{ symbol: "♦", name: "diamonds", color: "red" },
+			{ symbol: "♣", name: "clubs", color: "black" }
+		];
+		const ranks = ["A", "2", "3", "4", "5", "6", "7", "8", "9", "10", "J", "Q", "K"];
+		let deck = [];
+		let playerHand = [];
+		let dealerHand = [];
+		let bankroll = 500;
+		let wager = 25;
+		let roundActive = false;
+		let roundWager = 25;
+		let stats = { rounds: 0, wins: 0, blackjacks: 0, streak: 0, history: [] };
+
+		const playerHandElement = document.getElementById("player-hand");
+		const dealerHandElement = document.getElementById("dealer-hand");
+		const playerScoreElement = document.getElementById("player-score");
+		const dealerScoreElement = document.getElementById("dealer-score");
+		const statusElement = document.getElementById("status");
+		const wagerElement = document.getElementById("wager");
+		const sliderElement = document.getElementById("wager-slider");
+		const dealButton = document.getElementById("deal-button");
+		const hitButton = document.getElementById("hit-button");
+		const standButton = document.getElementById("stand-button");
+		const doubleButton = document.getElementById("double-button");
+		const surrenderButton = document.getElementById("surrender-button");
+
+		function createDeck() {
+			deck = suits.flatMap((suit) => ranks.map((rank) => ({ rank, ...suit })));
+			for (let index = deck.length - 1; index > 0; index -= 1) {
+				const swapIndex = Math.floor(Math.random() * (index + 1));
+				[deck[index], deck[swapIndex]] = [deck[swapIndex], deck[index]];
+			}
+		}
+
+		function drawCard() {
+			return deck.pop();
+		}
+
+		function getScore(hand) {
+			let score = hand.reduce((total, card) => total + (card.rank === "A" ? 11 : ["K", "Q", "J"].includes(card.rank) ? 10 : Number(card.rank)), 0);
+			let aces = hand.filter((card) => card.rank === "A").length;
+			while (score > 21 && aces > 0) {
+				score -= 10;
+				aces -= 1;
+			}
+			return score;
+		}
+
+		function renderCard(card, hidden = false, index = 0) {
+			if (hidden) return `<div class="card card-hidden" aria-label="Hidden card"><span>?</span></div>`;
+			return `<div class="card ${card.color} card-${index}" aria-label="${card.rank} of ${card.name}">
+				<span class="card-corner">${card.rank}<br>${card.symbol}</span>
+				<span class="card-suit">${card.symbol}</span>
+				<span class="card-corner card-corner-bottom">${card.rank}<br>${card.symbol}</span>
+			</div>`;
+		}
+
+		function renderHands(showDealer = false) {
+			playerHandElement.innerHTML = playerHand.map((card, index) => renderCard(card, false, index)).join("");
+			dealerHandElement.innerHTML = dealerHand.map((card, index) => renderCard(card, !showDealer && index === 1, index)).join("");
+			playerScoreElement.textContent = playerHand.length ? getScore(playerHand) : "--";
+			dealerScoreElement.textContent = showDealer ? getScore(dealerHand) : dealerHand.length ? `${getScore([dealerHand[0]])} + ?` : "--";
+		}
+
+		function updateWager(value) {
+			wager = Math.min(bankroll, Math.max(5, Number(value)));
+			sliderElement.value = wager;
+			wagerElement.textContent = `$${wager}`;
+		}
+
+		function updateStats(outcome, label) {
+			stats.rounds += 1;
+			if (outcome === "win" || outcome === "blackjack") {
+				stats.wins += 1;
+				stats.streak = Math.max(1, stats.streak + 1);
+			} else if (outcome === "lose") {
+				stats.streak = Math.min(-1, stats.streak - 1);
+			} else {
+				stats.streak = 0;
+			}
+			if (outcome === "blackjack") stats.blackjacks += 1;
+			stats.history.unshift({ label, outcome });
+			stats.history = stats.history.slice(0, 4);
+			document.getElementById("rounds-stat").textContent = stats.rounds;
+			document.getElementById("wins-stat").textContent = stats.wins;
+			document.getElementById("blackjacks-stat").textContent = stats.blackjacks;
+			document.getElementById("win-rate-stat").textContent = `${Math.round((stats.wins / stats.rounds) * 100)}%`;
+			document.getElementById("streak-label").textContent = stats.streak > 0 ? `${stats.streak} win streak` : stats.streak < 0 ? `${Math.abs(stats.streak)} loss streak` : "Even run";
+			document.getElementById("history-list").innerHTML = stats.history.map((hand) => `<li><span class="result-dot ${hand.outcome}"></span><span>${hand.label}</span><strong>${hand.outcome === "win" || hand.outcome === "blackjack" ? `+$${roundWager}` : hand.outcome === "lose" ? `-$${roundWager}` : "Push"}</strong></li>`).join("");
+		}
+
+		function setButtons(inRound) {
+			dealButton.disabled = inRound;
+			hitButton.disabled = !inRound;
+			standButton.disabled = !inRound;
+			doubleButton.disabled = !inRound || playerHand.length !== 2 || bankroll < wager;
+			surrenderButton.disabled = !inRound || playerHand.length !== 2;
+			sliderElement.disabled = inRound;
+			document.getElementById("decrease-wager").disabled = inRound;
+			document.getElementById("increase-wager").disabled = inRound;
+			dealButton.textContent = inRound ? "Round in play" : "Deal cards";
+		}
+
+		function finishRound(message, outcome) {
+			roundActive = false;
+			renderHands(true);
+			document.getElementById("dealer-message").textContent = `Final score: ${getScore(dealerHand)}`;
+			document.getElementById("player-message").textContent = `Final score: ${getScore(playerHand)}`;
+			if (outcome === "win") bankroll += roundWager;
+			if (outcome === "blackjack") bankroll += Math.floor(roundWager * 1.5);
+			if (outcome === "lose") bankroll -= roundWager;
+			if (outcome === "surrender") bankroll -= Math.floor(roundWager / 2);
+			document.getElementById("bankroll").textContent = `$${bankroll}`;
+			statusElement.textContent = message;
+			updateStats(outcome, message.replace(/\.$/, ""));
+			setButtons(false);
+			updateWager(Math.min(wager, bankroll));
+		}
+
+		function compareHands() {
+			const playerScore = getScore(playerHand);
+			const dealerScore = getScore(dealerHand);
+			if (dealerScore > 21 || playerScore > dealerScore) finishRound(`You win $${roundWager}.`, "win");
+			else if (playerScore < dealerScore) finishRound(`Dealer wins $${roundWager}.`, "lose");
+			else finishRound("Push. Your wager is returned.", "push");
+		}
+
+		function deal() {
+			if (bankroll < 5) {
+				statusElement.textContent = "You are out of chips. Refresh to start over.";
+				return;
+			}
+			createDeck();
+			roundWager = wager;
+			playerHand = [drawCard(), drawCard()];
+			dealerHand = [drawCard(), drawCard()];
+			roundActive = true;
+			document.getElementById("dealer-message").textContent = "One card is hidden";
+			document.getElementById("player-message").textContent = "Your move";
+			statusElement.textContent = "Hit for another card or stand on your hand.";
+			renderHands(false);
+			setButtons(true);
+			if (getScore(playerHand) === 21) {
+				finishRound("Blackjack. You win 3:2!", "blackjack");
+			}
+		}
+
+		function hit() {
+			playerHand.push(drawCard());
+			renderHands(false);
+			const score = getScore(playerHand);
+			if (score > 21) finishRound(`Bust. Dealer wins $${roundWager}.`, "lose");
+			else if (score === 21) stand();
+		}
+
+		function stand() {
+			while (getScore(dealerHand) < 17) dealerHand.push(drawCard());
+			compareHands();
+		}
+
+		function doubleDown() {
+			if (!roundActive || playerHand.length !== 2 || bankroll < wager) return;
+			roundWager = wager * 2;
+			wager = roundWager;
+			wagerElement.textContent = `$${wager}`;
+			playerHand.push(drawCard());
+			renderHands(false);
+			if (getScore(playerHand) > 21) finishRound(`Bust. Dealer wins $${roundWager}.`, "lose");
+			else stand();
+		}
+
+		function surrender() {
+			if (!roundActive || playerHand.length !== 2) return;
+			finishRound(`Surrendered. You lose $${Math.floor(roundWager / 2)}.`, "surrender");
+		}
+
+		sliderElement.addEventListener("input", (event) => updateWager(event.target.value));
+		document.getElementById("decrease-wager").addEventListener("click", () => updateWager(wager - 5));
+		document.getElementById("increase-wager").addEventListener("click", () => updateWager(wager + 5));
+		dealButton.addEventListener("click", deal);
+		hitButton.addEventListener("click", hit);
+		standButton.addEventListener("click", stand);
+		doubleButton.addEventListener("click", doubleDown);
+		surrenderButton.addEventListener("click", surrender);
+		updateWager(wager);
+		setButtons(false);
+	</script>
+</body>
+
+</html>

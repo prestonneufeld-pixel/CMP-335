@@ -1,0 +1,108 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Playfair+Display:wght@600;700&display=swap');
+
+:root {
+	--ink: #f6f1e8;
+	--muted: #aeb6aa;
+	--green: #123e36;
+	--green-light: #1c594b;
+	--gold: #d5a84b;
+	--red: #ce5a55;
+	--panel: #17241f;
+}
+
+* { box-sizing: border-box; }
+
+body {
+	margin: 0;
+	min-width: 320px;
+	color: var(--ink);
+	background: #0b1110;
+	font-family: 'DM Mono', monospace;
+}
+
+body::before {
+	position: fixed;
+	inset: 0;
+	z-index: -1;
+	content: '';
+	background: radial-gradient(circle at 50% 0%, #253a32 0, #0b1110 55%);
+}
+
+.game-shell { width: min(1120px, calc(100% - 40px)); margin: 0 auto; padding: 38px 0 46px; }
+.topbar, .hand-heading, .controls, .wager-row, .section-heading { display: flex; align-items: center; justify-content: space-between; }
+.eyebrow, .hand-label, .wager-panel label { margin: 0; color: var(--gold); font-size: .72rem; letter-spacing: .16em; text-transform: uppercase; }
+h1 { margin: 6px 0 0; font: 700 clamp(2.6rem, 6vw, 4.6rem)/.95 'Playfair Display', serif; letter-spacing: 0; }
+.bankroll { padding-left: 28px; border-left: 1px solid #394740; text-align: right; }
+.bankroll span { display: block; color: var(--muted); font-size: .65rem; letter-spacing: .12em; text-transform: uppercase; }
+.bankroll strong { display: block; margin-top: 4px; color: var(--gold); font-size: 1.5rem; font-weight: 500; }
+.table { position: relative; min-height: 530px; margin-top: 42px; overflow: hidden; padding: 40px clamp(20px, 5vw, 70px); border: 1px solid #367261; border-radius: 7px; background: radial-gradient(ellipse at center, var(--green-light), var(--green) 70%); box-shadow: inset 0 0 90px #081d18, 0 20px 45px #0008; }
+.table::after { position: absolute; inset: 14px; border: 1px solid #ffffff16; border-radius: 4px; content: ''; pointer-events: none; }
+.table-glow { position: absolute; top: 50%; left: 50%; width: 65%; height: 45%; transform: translate(-50%, -50%); background: #55a58a12; filter: blur(50px); }
+.dealer-area, .player-area, .table-divider { position: relative; z-index: 1; }
+.dealer-area { min-height: 184px; }
+.player-area { min-height: 184px; }
+.hand-heading { align-items: flex-start; }
+.hand-label { color: var(--ink); font-size: .86rem; }
+.hand-message { margin: 7px 0 0; color: var(--muted); font-size: .68rem; }
+.score { color: var(--gold); font-size: 1.35rem; }
+.hand { display: flex; min-height: 126px; padding-top: 22px; }
+.card { position: relative; width: 78px; height: 112px; margin-right: -13px; padding: 8px; border: 1px solid #d8d4ca; border-radius: 5px; color: #1a201c; background: #f6f2e9; box-shadow: 3px 4px 9px #071b1588; animation: deal .35s both; }
+.card.red { color: var(--red); }
+.card-corner { display: block; font-size: .9rem; line-height: .9rem; font-weight: 500; }
+.card-corner-bottom { position: absolute; right: 8px; bottom: 8px; transform: rotate(180deg); }
+.card-suit { position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%); font-size: 2.7rem; }
+.card-hidden { display: grid; place-items: center; color: var(--gold); background: #1b4e42; border: 1px solid #74a795; }
+.card-hidden span { display: grid; place-items: center; width: 44px; height: 73px; border: 1px solid #d5a84b88; font: 700 2rem 'Playfair Display', serif; }
+.table-divider { display: flex; align-items: center; gap: 14px; height: 70px; color: #d5a84b88; font-size: 1.1rem; }
+.table-divider::before, .table-divider::after { flex: 1; height: 1px; background: #ffffff1c; content: ''; }
+.table-divider span:nth-child(2), .table-divider span:nth-child(4) { color: #ce5a5588; }
+.controls { align-items: stretch; gap: 36px; margin-top: 27px; }
+.wager-panel { width: 220px; }
+.wager-row { margin: 9px 0 7px; }
+.wager-row output { color: var(--ink); font-size: 1.4rem; }
+.step-button { width: 28px; height: 28px; padding: 0; border: 1px solid #536159; border-radius: 50%; color: var(--ink); background: transparent; font-size: 1.15rem; cursor: pointer; }
+input[type='range'] { width: 100%; accent-color: var(--gold); cursor: pointer; }
+.action-panel { display: flex; align-items: center; justify-content: flex-end; gap: 10px; flex: 1; flex-wrap: wrap; }
+button { font: inherit; }
+.button { padding: 12px 20px; border: 1px solid #536159; border-radius: 3px; color: var(--ink); background: #17241f; cursor: pointer; transition: border-color .2s, transform .2s, background .2s; }
+.button:hover:not(:disabled), .step-button:hover:not(:disabled) { border-color: var(--gold); transform: translateY(-2px); }
+.button-primary { border-color: var(--gold); color: #101613; background: var(--gold); }
+.button-subtle { color: #c4a6a0; border-color: #694b48; }
+button:disabled, input:disabled { cursor: not-allowed; opacity: .4; }
+.status { min-height: 20px; margin: 23px 0 0; color: var(--muted); font-size: .72rem; text-align: center; }
+.dashboard { display: grid; grid-template-columns: 1.3fr 1fr .8fr; gap: 16px; margin-top: 36px; }
+.stats-panel, .history-panel, .rules-panel { padding: 22px; border: 1px solid #293a34; border-radius: 5px; background: #101a17; }
+.section-heading { padding-bottom: 18px; border-bottom: 1px solid #293a34; }
+.section-heading > span { color: var(--muted); font-size: .63rem; }
+.stats-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-top: 21px; }
+.stats-grid strong { display: block; color: var(--ink); font-size: 1.5rem; font-weight: 400; }
+.stats-grid span { display: block; margin-top: 5px; color: var(--muted); font-size: .6rem; text-transform: uppercase; }
+.history-list { display: grid; gap: 10px; margin: 0; padding: 17px 0 0; list-style: none; }
+.history-list li { display: flex; align-items: center; gap: 9px; color: var(--muted); font-size: .65rem; }
+.history-list strong { margin-left: auto; color: var(--ink); font-weight: 400; }
+.empty-history { font-size: .6rem !important; }
+.result-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--muted); }
+.result-dot.win, .result-dot.blackjack { background: var(--gold); }
+.result-dot.lose { background: var(--red); }
+.rules-panel { border-color: #8c7038; background: #241f13; }
+.rules-panel h2 { margin: 13px 0 14px; font: 600 1.35rem 'Playfair Display', serif; }
+.rules-panel ul { display: grid; gap: 10px; margin: 0; padding: 0; color: #c9c0a9; font-size: .65rem; list-style: none; }
+.rules-panel li::before { margin-right: 8px; color: var(--gold); content: '•'; }
+
+@keyframes deal { from { opacity: 0; transform: translateY(-12px) rotate(-4deg); } to { opacity: 1; transform: translateY(0) rotate(0); } }
+
+@media (max-width: 650px) {
+	.game-shell { width: min(100% - 24px, 560px); padding-top: 25px; }
+	.table { min-height: 480px; margin-top: 28px; padding: 27px 19px; }
+	.card { width: 61px; height: 91px; padding: 6px; }
+	.card-corner { font-size: .7rem; line-height: .7rem; }
+	.card-corner-bottom { right: 6px; bottom: 6px; }
+	.card-suit { font-size: 2rem; }
+	.card-hidden span { width: 34px; height: 60px; font-size: 1.5rem; }
+	.controls { align-items: stretch; flex-direction: column; gap: 22px; }
+	.wager-panel { width: 100%; }
+	.action-panel { justify-content: stretch; }
+	.button { flex: 1; padding: 12px 7px; font-size: .72rem; }
+	.dashboard { grid-template-columns: 1fr; }
+	.stats-grid { gap: 8px; }
+}

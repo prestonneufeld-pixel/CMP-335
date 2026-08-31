@@ -1,0 +1,56 @@
+* {
+  box-sizing: border-box;
+}
+
+body {
+  min-height: 100vh;
+  margin: 0;
+  display: grid;
+  place-items: center;
+  font-family: Arial, sans-serif;
+  background: #f2f6ff;
+  color: #172554;
+}
+
+.hello-world {
+  width: min(90%, 420px);
+  padding: 2rem;
+  text-align: center;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 8px 24px rgb(23 37 84 / 15%);
+}
+
+.hello-world h1 {
+  margin-top: 0;
+}
+
+.hello-world input,
+.hello-world button {
+  width: 100%;
+  padding: 0.75rem 1rem;
+  border-radius: 6px;
+  font: inherit;
+}
+
+.hello-world input {
+  margin: 1rem 0 0.75rem;
+  border: 1px solid #b7c5e5;
+}
+
+.hello-world button {
+  border: 0;
+  background: #2563eb;
+  color: #fff;
+  cursor: pointer;
+}
+
+.hello-world button:hover {
+  background: #1d4ed8;
+}
+
+.hello-world #greeting {
+  min-height: 1.5em;
+  margin-bottom: 0;
+  font-weight: 700;
+}
