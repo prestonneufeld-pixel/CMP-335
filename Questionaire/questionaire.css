@@ -1,0 +1,13 @@
+body {
+  background-color: lightblue;
+}
+
+form {
+  margin: 20px;
+}
+
+input,
+select,
+textarea {
+  margin: 5px;
+}
