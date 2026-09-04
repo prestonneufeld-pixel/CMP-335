@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html>
+
+<head>
+  <title>Animal World</title>
+  <link rel="stylesheet" href="webpage.css">
+</head>
+
+<body>
+
+  <header>
+    <nav>
+      <a href="#">Mammals</a>
+      <a href="#">Birds</a>
+      <a href="#">Reptiles</a>
+    </nav>
+
+    <h1>Animal World</h1>
+
+    <nav>
+      <a href="#">Home</a>
+      <a href="#">About</a>
+    </nav>
+  </header>
+
+
+  <main>
+
+    <h2>Welcome to Animal World &#128511;</h2>
+
+    <p>
+      Learn about different animals and where they live.
+    </p>
+
+    <a href="#" id="moveLink">Learn More</a>
+
+
+    <section class="animals">
+
+      <div class="animal">
+
+        <img src="IMG_9698.jpeg" alt="Waterfall">
+        <h3>Waterfall</h3>
+        <p>Habitat</p>
+        <a href="https://www.natgeokids.com/uk/home-is-good/savannah-habitat/">Learn about habitat's</a>
+      </div>
+
+      <div class="animal">
+        <img src="IMG_9703.jpeg" alt="Zebra">
+        <h3>Zebra</h3>
+        <p>Mammal</p>
+        <a href="https://www.ifaw.org/animals/zebras">Learn about Zebras</a>
+      </div>
+
+      <div class="animal">
+        <img src="IMG_9738.jpeg" alt="Giraffe">
+        <h3>Giraffe</h3>
+        <p>Mammal</p>
+        <a href="https://www.awf.org/wildlife-conservation/giraffe">Learn about Giraffes</a>
+      </div>
+
+      <div class="animal">
+        <img src="IMG_9748.jpeg" alt="Giraffe">
+        <h3>Giraffe</h3>
+        <p>Mammal</p>
+        <a href="https://www.nationalgeographic.com/animals/mammals/facts/giraffe">Learn about Giraffes</a>
+      </div>
+
+    </section>
+
+  </main>
+
+  <footer>
+    <p>Animal World &copy; 2026</p>
+    <button onclick="window.open('https://www.omahazoo.com/plan-your-visit', '_blank') ">Come
+      Visit Us</button>
+  </footer>
+
+  <script>
+    const link = document.getElementById("moveLink");
+
+    link.addEventListener( "click", function () {
+      const x = Math.random() * (window.innerWidth - link.offsetWidth);
+      const y = Math.random() * (window.innerHeight - link.offsetHeight);
+
+      link.style.position = "fixed";
+      link.style.left = x + "px";
+      link.style.top = y + "px";
+    });
+  </script>
+
+</body>
+
+</html>
