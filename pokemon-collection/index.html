@@ -1,0 +1,209 @@
+// You are going to have to run this in the integrated browser for it to work.
+<!DOCTYPE html>
+<html>
+
+<head>
+    <title>Pokemon Collection</title>
+
+    <style>
+        body {
+            font-family: Arial;
+            background-color: lightgray;
+            text-align: center;
+        }
+
+        h1 {
+            color: darkblue;
+        }
+
+        input {
+            padding: 8px;
+            margin: 5px;
+        }
+
+        button {
+            padding: 8px;
+            margin: 5px;
+            cursor: pointer;
+        }
+
+        .section {
+            background-color: white;
+            padding: 15px;
+            margin: 20px auto;
+            width: 80%;
+            border: 1px solid black;
+        }
+
+        #list {
+            text-align: left;
+            width: 300px;
+            margin: auto;
+        }
+    </style>
+</head>
+
+<body>
+
+    <h1>Pokemon Collection</h1>
+
+    <div class="section">
+        <h2>All Pokemon</h2>
+        <button onclick="getPokemon()">Show Pokemon</button>
+        <div id="list"></div>
+    </div>
+
+    <div class="section">
+        <h2>Find Pokemon</h2>
+        <input type="number" id="searchId" placeholder="Pokemon ID">
+        <button onclick="findPokemon()">Search</button>
+        <p id="searchResult"></p>
+    </div>
+
+    <div class="section">
+        <h2>Add Pokemon</h2>
+        <input type="text" id="addName" placeholder="Name">
+        <input type="text" id="addType" placeholder="Type">
+        <input type="text" id="addEvolution" placeholder="Evolution">
+        <br>
+        <button onclick="addPokemon()">Add Pokemon</button>
+    </div>
+
+    <div class="section">
+        <h2>Update Pokemon</h2>
+        <input type="number" id="updateId" placeholder="Pokemon ID">
+        <input type="text" id="updateName" placeholder="New Name">
+        <input type="text" id="updateType" placeholder="New Type">
+        <input type="text" id="updateEvolution" placeholder="New Evolution">
+        <br>
+        <button onclick="updatePokemon()">Update Pokemon</button>
+    </div>
+
+    <div class="section">
+        <h2>Delete Pokemon</h2>
+        <input type="number" id="deleteId" placeholder="Pokemon ID">
+        <button onclick="deletePokemon()">Delete Pokemon</button>
+    </div>
+
+    <p id="message"></p>
+
+    <script>
+
+        // Show all Pokemon
+        async function getPokemon() {
+            let response = await fetch('http://127.0.0.1:3000/api/pokemon');
+            let data = await response.json();
+
+            let list = document.getElementById('list');
+            list.innerHTML = '';
+
+            for (let p of data) {
+                list.innerHTML += '<p>ID: ' + p.id +
+                    ' | Name: ' + p.name +
+                    ' | Type: ' + p.type +
+                    ' | Evolution: ' + p.evolution + '</p>';
+            }
+        }
+
+        // Find one Pokemon
+        async function findPokemon() {
+            let id = document.getElementById('searchId').value;
+
+            let response = await fetch('http://127.0.0.1:3000/api/pokemon/' + id);
+
+            if (response.ok) {
+                let p = await response.json();
+
+                document.getElementById('searchResult').innerText =
+                    'Name: ' + p.name +
+                    ' | Type: ' + p.type +
+                    ' | Evolution: ' + p.evolution;
+            } else {
+                document.getElementById('searchResult').innerText =
+                    'Pokemon not found.';
+            }
+        }
+
+        // Add Pokemon
+        async function addPokemon() {
+            let name = document.getElementById('addName').value;
+            let type = document.getElementById('addType').value;
+            let evolution = document.getElementById('addEvolution').value;
+
+            let response = await fetch('http://127.0.0.1:3000/api/pokemon', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    type: type,
+                    evolution: evolution
+                })
+            });
+
+            if (response.ok) {
+                document.getElementById('message').innerText =
+                    'Pokemon added!';
+                getPokemon();
+            } else {
+                document.getElementById('message').innerText =
+                    'Please fill out all fields.';
+            }
+        }
+
+        // Update Pokemon
+        async function updatePokemon() {
+            let id = document.getElementById('updateId').value;
+            let name = document.getElementById('updateName').value;
+            let type = document.getElementById('updateType').value;
+            let evolution = document.getElementById('updateEvolution').value;
+
+            let response = await fetch('http://127.0.0.1:3000/api/pokemon/' + id, {
+                method: 'PUT',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify({
+                    name: name,
+                    type: type,
+                    evolution: evolution
+                })
+            });
+
+            if (response.ok) {
+                document.getElementById('message').innerText =
+                    'Pokemon updated!';
+                getPokemon();
+            } else {
+                document.getElementById('message').innerText =
+                    'Could not update Pokemon. Check the ID and fields.';
+            }
+        }
+
+        // Delete Pokemon
+        async function deletePokemon() {
+            let id = document.getElementById('deleteId').value;
+
+            let response = await fetch('http://127.0.0.1:3000/api/pokemon/' + id, {
+                method: 'DELETE'
+            });
+
+            if (response.ok) {
+                document.getElementById('message').innerText =
+                    'Pokemon deleted!';
+                getPokemon();
+            } else {
+                document.getElementById('message').innerText =
+                    'Pokemon not found.';
+            }
+        }
+
+        // Show Pokemon when page loads
+        getPokemon();
+
+    </script>
+
+</body>
+
+</html>
